@@ -1,10 +1,10 @@
 # Author: Alina Tu
 # Contact: alinat2@uci.edu
-# Last Updated: 2/26/2022
+# Last Updated: 3/1/2022
 # About: This preprocessing script is for the Symmetry Span (Sspan) data files of the Individual Differences 
 #        and Robotics (IndivRobotics) project. Symmetry refers to the grid used when determining whether 
-#        it's symmetrical (SymmetryDisplays: symm number). Matrix refers to the red squares, recalled in 
-#        sequential order (MatrixID: matrix number).
+#        the design is symmetrical (SymmetryDisplays: symm number). Matrix refers to the red squares, recalled 
+#        in sequential order (MatrixID: matrix number).
 
 # Getting started [PACKAGES AND WORKING DIRECTORY]
 install.packages("rprime")
@@ -33,9 +33,6 @@ read <- function(file_name) {
 }
 
 test_data <- read("SspanShort-805-4.txt")
-test_data1 <- read("SspanShort-803-1.txt")
-test_data2 <- read("SspanShort-807-1.txt")
-test_data3 <- read("SspanShort-810-1.txt")
 
 # Store list of names for all Eprime data files
 files <- dir(pattern = "*.txt")
@@ -91,6 +88,3 @@ write.csv(participant_full, "Sspan_participant_full.csv")
 
 # cycle, sample, wordselection (combination of array#), symmetry time?
 # Symm.ACC and Symm.RT refer to practice trials for true/false symmetry grid
-
-# test_datas <- map_df(files, organize)
-# test_datas$SspanScore
