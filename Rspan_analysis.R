@@ -1,6 +1,6 @@
 # Author: Alina Tu
 # Contact: alinat2@uci.edu
-# Last Updated: 3/1/2022
+# Last Updated: 3/12/2022
 # About: This preprocessing script is for the Reading Span (Rspan) data files of the Individual Differences 
 #        and Robotics (IndivRobotics) project. Reading refers to the sentences used when determining whether 
 #        the sentence makes sense. Letter refers to the letters that show up and are recalled in 
@@ -18,7 +18,7 @@ library(tidyverse)
 
 # Input the working directory containing the Rspan Eprime data files
 # Each file is named "RspanShort-" + "subject ID" + "session number" (i.e., RspanShort-111-1.txt)
-workdir <- "/Users/alinatu/Downloads/RspanShortdata_pilot_022322/"
+workdir <- "/Users/alinatu/Downloads/RspanShort/"
 setwd(workdir)
 
 # Create a function to organize Eprime data
@@ -34,7 +34,7 @@ read <- function(file_name) {
   # data[data == "?"] <- "NA"
 }
 
-test_data <- read("RspanShort-805-4.txt")
+test_data <- read("RspanShort-789-1.txt")
 
 # Store list of names for all Eprime data files
 files <- dir(pattern = "*.txt")
@@ -48,9 +48,9 @@ for (indiv_eprime_datafile in files){
   sub_id <- as.numeric(readable_data$Subject)[1]
   
   # Symmetry-matrix trial sequences
-  trial_data <- readable_data[readable_data$Procedure == "trialdo" | readable_data$Procedure == "RedrawProc", ]
+  trial_data <- readable_data[readable_data$Procedure == "trialdo", ]
   trial_proc <- as_tibble(trial_data) %>% # there are 6 test trials
-    select(ShowSymm.RT, CheckResponse.RT, CollectClick.RT)
+    select(showSentence.RT, SENSEBOTH.ACC, SENSEBOTH.RT)
     # ShowSymm.RT: RT taken to click past the symmetry grid
     # CheckResponse.RT: RT taken to select a true/false response
     # CollectClick.RT: RT taken to select a red square during recall
@@ -60,33 +60,29 @@ for (indiv_eprime_datafile in files){
   # Overall test "recall" trials
   recall_data <- readable_data[readable_data$Procedure == "recall", ]
   recall_proc <- as_tibble(recall_data)[3:8,] %>% # there are 6 test trials
-    select(Cycle, Sample, SpanScore, SpanTotal)
+    select(Cycle, Sample, SpanScore, SpanTotal, setsz, numberwrong)
   recall_proc <- cbind(rep(sub_id, nrow(recall_proc)), recall_proc)
   recall_full <- rbind(recall_full, recall_proc)
   
   # Overall scores
   summary_data <- readable_data[readable_data$Procedure == "SessionProc", ]
   summary_proc <- as_tibble(summary_data)[1,] %>%
-    select(SymmErrorTotal, SpeedErrorTotal, AccErrorTotal, RspanScore, RspanTotal)
-    # Sspan Score: sum of SpanScore in each recall_proc procedure (# of correctly recalled red squares)
+    select(MathErrorTotal, SpeedErrorTotal, AccErrorTotal, RspanScore, RspanTotal)
+    # Rspan Score: sum of SpanScore in each recall_proc procedure (# of correctly recalled letters)
     # note: set size = list length
-    # Sspan Total: sum of SpanTotal in each recall_proc procedure (total possible red squares to recall)
-  avg_ShowSymm.RT <- mean(as.numeric(trial_proc$ShowSymm.RT), na.rm = TRUE)
-  avg_CheckResponse.RT <- mean(as.numeric(trial_proc$CheckResponse.RT), na.rm = TRUE)
-  avg_CollectClick.RT <- mean(as.numeric(trial_proc$CollectClick.RT), na.rm = TRUE)
-  summary_proc <- cbind(sub_id, avg_ShowSymm.RT, avg_CheckResponse.RT, avg_CollectClick.RT, summary_proc)
+    # Rspan Total: sum of SpanTotal in each recall_proc procedure (total possible letters to recall)
+  avg_showSentence.RT <- mean(as.numeric(trial_proc$showSentence.RT), na.rm = TRUE)
+  avg_SENSEBOTH.ACC <- mean(as.numeric(trial_proc$SENSEBOTH.ACC), na.rm = TRUE)
+  avg_SENSEBOTH.RT <- mean(as.numeric(trial_proc$SENSEBOTH.RT), na.rm = TRUE)
+  summary_proc <- cbind(sub_id, avg_showSentence.RT, avg_SENSEBOTH.ACC, avg_SENSEBOTH.RT, summary_proc)
   participant_full <- rbind(participant_full, summary_proc)
-
-  # 1. (later) pull RTs per trial thing
 }
 
-colnames(trial_full) <- c("sub_id", "ShowSymm.RT", "CheckResponse.RT", "CollectClick.RT")
-colnames(recall_full) <- c("sub_id", "Cycle", "Sample", "SpanScore", "SpanTotal")
+colnames(trial_full) <- c("sub_id", "showSentence.RT", "SENSEBOTH.ACC", "SENSEBOTH.RT")
+colnames(recall_full) <- c("sub_id", "Cycle", "Sample", "SpanScore", "SpanTotal", "Sets", "numberwrong")
 
 print("Writing CSVs...")
 write.csv(trial_full, "Rspan_trial_full.csv")
 write.csv(recall_full, "Rspan_recall_full.csv")
 write.csv(participant_full, "Rspan_participant_full.csv")
 
-# cycle, sample, wordselection (combination of array#), symmetry time?
-# Symm.ACC and Symm.RT refer to practice trials for true/false sentence
